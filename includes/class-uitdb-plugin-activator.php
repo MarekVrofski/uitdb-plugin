@@ -16,8 +16,8 @@
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since      1.0.0
- * @package    Plugin_Name
- * @subpackage Plugin_Name/includes
+ * @package    UitdbPlugin
+ * @subpackage UitdbPlugin/includes
  * @author     Your Name <email@example.com>
  */
 class UitdbPlugin_Activator {
