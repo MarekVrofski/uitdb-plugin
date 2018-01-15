@@ -30,7 +30,20 @@ class UitdbPlugin_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-
+        self::dropTables();
 	}
+
+	public function dropTables()
+    {
+        global $wpdb;
+
+        $uitdb_events_table_name = $wpdb->prefix . 'uitdb_events';
+        $uitdb_key_secret_table_name = $wpdb->prefix . 'uitdb_key_secret';
+        $uitdb_options_table_name = $wpdb->prefix . 'uitdb_options';
+
+        $sql = "DROP TABLE " . $uitdb_events_table_name ."," . $uitdb_key_secret_table_name . "," . $uitdb_options_table_name . ";";
+
+        $wpdb->query($sql);
+    }
 
 }
