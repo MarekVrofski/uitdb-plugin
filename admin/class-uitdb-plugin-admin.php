@@ -100,4 +100,20 @@ class UitdbPlugin_Admin {
 
 	}
 
+    public function AdminInterfaces()
+    {
+
+    }
+
+    public function UitdbOverview()
+    {
+        if ( !current_user_can('manage_options')) {
+            wp_die( __('You do not have sufficient permissions'));
+        }
+
+        if( is_admin() ) {
+
+        }
+    }
+
 }
