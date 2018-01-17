@@ -100,19 +100,21 @@ class UitdbPlugin_Admin {
 
 	}
 
-    public function AdminInterfaces()
+	public function admin_interface()
     {
+        /**
+         * add_menu_page( page_title, menu_title, capability, menu_slug, function )
+         * add_submenu_page( parent_slug, page_title, menu_title, capability, menu_slug, function )
+         */
 
-    }
+        add_menu_page('UITDB Options', 'UITDB', 'manage_options', 'uitdb-beheer', 'uitdb_options');
+        add_submenu_page( 'uitdb-beheer', 'Importeer', 'Importeer','manage_options','uitdb-import', 'uitdb_import');
+        add_submenu_page( 'uitdb-beheer', 'Nieuw evenement handmatig', 'Nieuw evenement','manage_options','uitdb-new', 'uitdb_new');
+        add_submenu_page( 'uitdb-beheer', 'Options', 'Options','manage_options','uitdb-options', 'uitdb_options_page');
 
-    public function UitdbOverview()
-    {
-        if ( !current_user_can('manage_options')) {
-            wp_die( __('You do not have sufficient permissions'));
-        }
-
-        if( is_admin() ) {
-
+        function uitdb_options()
+        {
+            require_once ( dirname(__FILE__) . '/partials/uitdb-plugin-admin-display.php');
         }
     }
 
