@@ -6,13 +6,13 @@
  * Time: 11:17
  */
 
-require_once (__DIR__) . '/../controller/uitdbController.php';
+require_once (__FILE__);
 
 ?>
 <h1>Options</h1>
 
 <div class="wrap">
-    <form action="<?php __DIR__ . '/../controller/uitdbController.php' ?>" method="post">
+    <form action="<?php __FILE__ ?>" method="post">
         <input type="hidden" name="type" value="keySecret">
         <table>
             <tr>
