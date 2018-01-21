@@ -121,6 +121,16 @@ class UitdbPlugin_Admin {
         {
             require_once ( dirname(__FILE__) . '/partials/uitdb-plugin-import-display.php');
         }
+
+        function uitdb_new()
+        {
+            require_once ( dirname(__FILE__) . '/partials/uitdb-plugin-new-event-display.php');
+        }
+
+        function uitdb_options_page()
+        {
+            require_once ( dirname(__FILE__) . '/partials/uitdb-plugin-options-page-display.php');
+        }
     }
 
 }
