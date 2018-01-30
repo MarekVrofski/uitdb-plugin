@@ -41,6 +41,9 @@ switch ($_POST['type']){
         $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
         $store = $ec->importEvents();
         break;
+    case 'loadEventsAuto':
+        $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
+        $store = $ec->loadEventsAuto($_POST['autoloadYes'], $_POST['autoloadNo']);
 }
 
 class UitdbPlugin_Admin {
@@ -226,7 +229,7 @@ class UitdbPlugin_Admin {
         ]);
 
         /*
-         * todo: make sure the keyword is working
+         * todo: make sure the keyword is working with input
          */
 
         try {
@@ -307,6 +310,80 @@ class UitdbPlugin_Admin {
             }
         }
         return;
+    }
+
+    public function loadEventsAuto($autoloadYes, $autoloadNo)
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_options';
+        $oName = "autoload";
+
+        $selectQ = "SELECT * FROM $tName WHERE uitdb_option_name = '$oName'";
+
+        $indb = $wpdb->get_row($selectQ, ARRAY_A);
+
+        $indb = $wpdb->get_row($selectQ, ARRAY_A);
+
+        if ($indb > 0) {
+            if (strtolower($indb['uitdb_option_value']) === 'yes' || strtolower($autoloadNo) === 'no') {
+                $wpdb->query( $wpdb->prepare(
+                    "UPDATE $tName SET uitdb_option_value = '%s' WHERE uitdb_option_name = '%s'",
+                    array(
+                        $autoloadNo,
+                        $oName
+                    )
+                ));
+            } else if (strtolower($indb['uidb_option_value']) === 'no' || strtolower($autoloadYes) === 'yes') {
+                $wpdb->query( $wpdb->prepare(
+                    "UPDATE $tName SET uitdb_option_value = '%s' WHERE uitdb_option_name = '%s'",
+                    array(
+                        $autoloadYes,
+                        $oName
+                    )
+                ));
+            }
+            return;
+        } else {
+            if ( !isset($autoloadYes) && strtolower($autoloadNo) === 'no') {
+                $result = $wpdb->get_row($selectQ, ARRAY_A);
+
+                if ($result < 1) {
+                    $wpdb->query( $wpdb->prepare(
+                        "INSERT INTO $tName (uitdb_option_name, uitdb_option_value) VALUES ( %s, %s)",
+                        array(
+                            $oName,
+                            $autoloadNo
+                        )
+                    ));
+
+                    if ($wpdb === false) {
+                        echo "Niet opgeslagen";
+                    } else if ($wpdb === true) {
+                        echo "Opgeslagen";
+                    }
+                }
+                return;
+            } else if (strtolower($autoloadYes) === 'yes' && !isset($autoloadNo)) {
+                $result = $wpdb->get_row($selectQ, ARRAY_A);
+
+                if ($result < 1) {
+                    $wpdb->query( $wpdb->prepare(
+                        "INSERT INTO $tName (uitdb_option_name, uitdb_option_value) VALUES ( %s, %s)",
+                        array(
+                            $oName,
+                            $autoloadYes
+                        )
+                    ));
+
+                    if ($wpdb === false) {
+                        echo "Niet opgeslagen";
+                    } else if ($wpdb === true) {
+                        echo "Opgeslagen";
+                    }
+                }
+                return;
+            }
+        }
     }
 
 }
