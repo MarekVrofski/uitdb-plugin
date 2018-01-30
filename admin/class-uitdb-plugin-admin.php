@@ -21,10 +21,25 @@
  * @author     Your Name <email@example.com>
  */
 
+/**
+ * Include the autoload file
+ */
+
+require_once plugin_dir_path( dirname( __FILE__)) . 'vendor/autoload.php';
+
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Subscriber\Oauth\Oauth1;
+use GuzzleHttp\Psr7;
+
 switch ($_POST['type']){
     case 'keySecret':
-        $ec = new UitdbPlugin_Admin();
+        $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
         $store = $ec->ksCombo($_POST['key'], $_POST['secret']);
+        break;
+    case 'importEvents':
+        $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
+        $store = $ec->importEvents();
         break;
 }
 
@@ -171,6 +186,126 @@ class UitdbPlugin_Admin {
             }
         }
 
+        return;
+    }
+
+    public function showKsCombo()
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_key_secret';
+
+        $q = "SELECT * FROM $tName";
+        $result = $wpdb->get_row($q, ARRAY_A);
+
+        return $result;
+    }
+
+    public function importEvents()
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_events';
+        $ksCombo = $this->showKsCombo();
+
+        $key = $ksCombo['uitdb_key'];
+        $secret = $ksCombo['uitdb_secret'];
+        $base_url = 'https://www.uitid.be/';
+
+        $stack = HandlerStack::create();
+        $middleware = new Oauth1([
+            'consumer_key' => $key,
+            'consumer_secret' => $secret,
+            'token' => '',
+            'token_secret' => ''
+        ]);
+        $stack->push($middleware);
+
+        $client = new Client([
+            'base_uri' => $base_url,
+            'handler' => $stack,
+            'auth' => 'oauth'
+        ]);
+
+        /*
+         * todo: make sure the keyword is working
+         */
+
+        try {
+            $response = $client->get('uitid/rest/searchv2/search', ['query' => [
+                'q' => '*:* AND keywords:zvstp',
+                'start' => 0,
+                'rows' => 300,
+                'sort' => 'startdate asc'
+            ]]);
+
+            $response = (string)$response->getBody();
+            $prefix = 'cdb';
+            $xml = simplexml_load_string($response, 'SimpleXMLElement', 0, $prefix, true);
+
+            foreach($xml->event as $xmlEvent) {
+                $cdbid = $xmlEvent->attributes()->cdbid->__toString();
+
+                $q = "SELECT * FROM $tName WHERE cdb_id = $cdbid";
+                $indb = $wpdb->get_row($q, ARRAY_A);
+
+                if($indb > 0) {
+                    echo "<strong>Evenement met: " . $cdbid . " bestaat al</strong>";
+                } else {
+                    if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
+                        $price = "0";
+                    } else {
+                        $price = $xmlEvent->eventdetails->eventdetail->price->pricevalue;
+                    }
+
+                    if ($xmlEvent->eventdetails->eventdetail->price->pricedescription == null) {
+                        $priceDesc = "not available";
+                    } else {
+                        $priceDesc = $xmlEvent->eventdetails->eventdetail->price->pricedescription->__toString();
+                    }
+
+                    if ($xmlEvent->eventdetails->eventdetail->media->file == null){
+                        $media = "not available";
+                    } else {
+                        $media = $xmlEvent->eventdetails->eventdetail->media->file->hlink->__toString();
+                    }
+
+                    $wpdb->query( $wpdb->prepare(
+                        "INSERT INTO $tName (cdb_id, available_from, available_to, event_type, latitude, longitude, address_no, address, zip_code, city, email, long_description, price, price_description, title, media_link) VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )",
+                        array(
+                            $xmlEvent->attributes()->cdbid->__toString(),
+                            date('Y-m-d', strtotime($xmlEvent->attributes()->availablefrom->__toString())),
+                            date('Y-m-d', strtotime($xmlEvent->attributes()->availableto->__toString())),
+                            $xmlEvent->categories->category->attributes()->type->__toString(),
+                            $xmlEvent->contactinfo->address->physical->gis->xcoordinate->__toString(),
+                            $xmlEvent->contactinfo->address->physical->gis->ycoordinate->__toString(),
+                            $xmlEvent->contactinfo->address->physical->housenr->__toString(),
+                            $xmlEvent->contactinfo->address->physical->street->__toString(),
+                            $xmlEvent->contactinfo->address->physical->zipcode->__toString(),
+                            $xmlEvent->contactinfo->address->physical->city->__toString(),
+                            $xmlEvent->contactinfo->mail->__toString(),
+                            $xmlEvent->eventdetails->eventdetail->longdescription->__toString(),
+                            $price,
+                            $priceDesc,
+                            $xmlEvent->eventdetails->eventdetail->title->__toString(),
+                            $media
+                        )
+                    ));
+
+                    if($wpdb == false){
+                        echo "<strong>Geen nieuw record aangemaakt</strong>";
+                    }elseif($wpdb == true){
+                        echo "<strong>Nieuw record aangemaakt</strong> met cdbid: " . $cdbid . "<br/>";
+                    }
+                }
+            }
+
+        }
+
+        catch (\GuzzleHttp\Exception\RequestException $e) {
+            echo Psr7\str($e->getRequest());
+            if($e->hasResponse()) {
+                echo Psr7\str($e->getResponse());
+            }
+        }
         return;
     }
 

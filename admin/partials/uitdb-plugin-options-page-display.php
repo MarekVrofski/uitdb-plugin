@@ -8,6 +8,9 @@
 
 require_once (__FILE__);
 
+$ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
+$result = $ec->showKsCombo();
+
 ?>
 <h1>Options</h1>
 
@@ -21,11 +24,11 @@ require_once (__FILE__);
             </tr>
             <tr>
                 <td><label for="key">Key:</label></td>
-                <td><input type="text" name="key" placeholder="<?php echo $result['uitdb_key']; ?>"/></td>
+                <td><input type="text" name="key" placeholder="<?php echo isset($result) ? $result['uitdb_key'] : 'Key'; ?>"/></td>
             </tr>
             <tr>
                 <td><label for="secret">Secret:</label></td>
-                <td><input type="text" name="secret" placeholder="<?php echo $result['uitdb_secret']; ?>"/></td>
+                <td><input type="text" name="secret" placeholder="<?php echo isset($result) ? $result['uitdb_secret'] : 'Secret'; ?>"/></td>
             </tr>
             <tr>
                 <td></td>
