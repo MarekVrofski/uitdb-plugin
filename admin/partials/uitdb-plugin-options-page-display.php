@@ -9,7 +9,8 @@
 require_once (__FILE__);
 
 $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
-$result = $ec->showKsCombo();
+$ksCombo = $ec->showKsCombo();
+$aLoad = $ec->showAutoload();
 
 /**
  * todo: update this so it is a form where you can delete/update the key/secret
@@ -28,11 +29,11 @@ $result = $ec->showKsCombo();
             </tr>
             <tr>
                 <td><label for="key">Key:</label></td>
-                <td><input type="text" name="key" placeholder="<?php echo isset($result) ? $result['uitdb_key'] : 'Key'; ?>"/></td>
+                <td><input type="text" name="key" placeholder="<?php echo isset($ksCombo) ? $ksCombo['uitdb_key'] : 'Key'; ?>"/></td>
             </tr>
             <tr>
                 <td><label for="secret">Secret:</label></td>
-                <td><input type="text" name="secret" placeholder="<?php echo isset($result) ? $result['uitdb_secret'] : 'Secret'; ?>"/></td>
+                <td><input type="text" name="secret" placeholder="<?php echo isset($ksCombo) ? $ksCombo['uitdb_secret'] : 'Secret'; ?>"/></td>
             </tr>
             <tr>
                 <td></td>
@@ -66,7 +67,7 @@ $result = $ec->showKsCombo();
             </tr>
             <tr>
                 <td>Currently set:</td>
-                <td><?php echo $options['uitdb_option_value']; ?></td>
+                <td><?php echo $aLoad['uitdb_option_value']; ?></td>
             </tr>
             <tr>
                 <td></td>
