@@ -48,85 +48,85 @@ switch ($_POST['type']){
 
 class UitdbPlugin_Admin {
 
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $uitdb_plugin    The ID of this plugin.
-	 */
-	private $uitdb_plugin;
+    /**
+     * The ID of this plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string    $uitdb_plugin    The ID of this plugin.
+     */
+    private $uitdb_plugin;
 
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
+    /**
+     * The version of this plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string    $version    The current version of this plugin.
+     */
+    private $version;
 
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $uitdb_plugin       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
-	public function __construct( $uitdb_plugin, $version ) {
+    /**
+     * Initialize the class and set its properties.
+     *
+     * @since    1.0.0
+     * @param      string    $uitdb_plugin       The name of this plugin.
+     * @param      string    $version    The version of this plugin.
+     */
+    public function __construct( $uitdb_plugin, $version ) {
 
-		$this->uitdb_plugin = $uitdb_plugin;
-		$this->version = $version;
+        $this->uitdb_plugin = $uitdb_plugin;
+        $this->version = $version;
 
-	}
+    }
 
-	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_styles() {
+    /**
+     * Register the stylesheets for the admin area.
+     *
+     * @since    1.0.0
+     */
+    public function enqueue_styles() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Plugin_Name_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Plugin_Name_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+        /**
+         * This function is provided for demonstration purposes only.
+         *
+         * An instance of this class should be passed to the run() function
+         * defined in Plugin_Name_Loader as all of the hooks are defined
+         * in that particular class.
+         *
+         * The Plugin_Name_Loader will then create the relationship
+         * between the defined hooks and the functions defined in this
+         * class.
+         */
 
-		wp_enqueue_style( $this->uitdb_plugin, plugin_dir_url( __FILE__ ) . 'css/uitdb-plugin-admin.css', array(), $this->version, 'all' );
+        wp_enqueue_style( $this->uitdb_plugin, plugin_dir_url( __FILE__ ) . 'css/uitdb-plugin-admin.css', array(), $this->version, 'all' );
 
-	}
+    }
 
-	/**
-	 * Register the JavaScript for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_scripts() {
+    /**
+     * Register the JavaScript for the admin area.
+     *
+     * @since    1.0.0
+     */
+    public function enqueue_scripts() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Plugin_Name_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Plugin_Name_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+        /**
+         * This function is provided for demonstration purposes only.
+         *
+         * An instance of this class should be passed to the run() function
+         * defined in Plugin_Name_Loader as all of the hooks are defined
+         * in that particular class.
+         *
+         * The Plugin_Name_Loader will then create the relationship
+         * between the defined hooks and the functions defined in this
+         * class.
+         */
 
-		wp_enqueue_script( $this->uitdb_plugin, plugin_dir_url( __FILE__ ) . 'js/uitdb-plugin-admin.js', array( 'jquery' ), $this->version, false );
+        wp_enqueue_script( $this->uitdb_plugin, plugin_dir_url( __FILE__ ) . 'js/uitdb-plugin-admin.js', array( 'jquery' ), $this->version, false );
 
-	}
+    }
 
-	public function admin_interface()
+    public function admin_interface()
     {
         /**
          * add_menu_page( page_title, menu_title, capability, menu_slug, function )
@@ -234,7 +234,7 @@ class UitdbPlugin_Admin {
 
         try {
             $response = $client->get('uitid/rest/searchv2/search', ['query' => [
-                'q' => '*:* AND keywords:zvstp',
+                'q' => '*:*',
                 'start' => 0,
                 'rows' => 300,
                 'sort' => 'startdate asc'
@@ -341,6 +341,8 @@ class UitdbPlugin_Admin {
                         $oName
                     )
                 ));
+
+                $this->actualAutoload();
             }
             return;
         } else {
@@ -375,6 +377,8 @@ class UitdbPlugin_Admin {
                         )
                     ));
 
+                    $this->actualAutoload();
+
                     if ($wpdb === false) {
                         echo "Niet opgeslagen";
                     } else if ($wpdb === true) {
@@ -386,4 +390,34 @@ class UitdbPlugin_Admin {
         }
     }
 
+    public function showAutoload()
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_options';
+        $oName = "autoload";
+
+        $q = "SELECT * FROM $tName WHERE uitdb_option_name = '$oName'";
+        $result = $wpdb->get_row($q, ARRAY_A);
+
+        return $result;
+    }
+
+    public function actualAutoload() {
+        // Call function for cron
+        add_action('init', array( $this, 'send_emails_to_users') );
+    }
+
+    public function send_emails_to_users() {
+        if(!wp_next_scheduled('cliv_recurring_cron_job')) {
+            // Add "cliv_recurring_cron_job" action so it fire every hour
+            wp_schedule_event(time(), 'hourly', 'cliv_recurring_cron_job');
+        }
+    }
 }
+
+function do_not_send_a_email() {
+    $testEC = new UitdbPlugin_Admin();
+    $testEC->importEvents();
+}
+
+add_action('cliv_recurring_cron_job', 'do_not_send_a_email' );
