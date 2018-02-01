@@ -27,6 +27,10 @@
 
 require_once plugin_dir_path( dirname( __FILE__)) . 'vendor/autoload.php';
 
+/**
+ * @todo: use the notices from wordpress for notices instead of echoes
+ */
+
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Subscriber\Oauth\Oauth1;
