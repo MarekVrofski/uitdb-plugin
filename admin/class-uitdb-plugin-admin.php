@@ -312,6 +312,16 @@ class UitdbPlugin_Admin {
         return;
     }
 
+    public function eventsOverview()
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_events';
+
+        $events = $wpdb->get_results("SELECT * FROM $tName ORDER BY available_to ASC");
+
+        return $events;
+    }
+
     public function loadEventsAuto($autoloadYes, $autoloadNo)
     {
         global $wpdb;
