@@ -256,7 +256,7 @@ class UitdbPlugin_Admin {
             foreach($xml->event as $xmlEvent) {
                 $cdbid = $xmlEvent->attributes()->cdbid->__toString();
 
-                $q = "SELECT * FROM $tName WHERE cdb_id = $cdbid";
+                $q = "SELECT * FROM $tName WHERE cdb_id = '$cdbid'";
                 $indb = $wpdb->get_row($q, ARRAY_A);
 
                 if($indb > 0) {
