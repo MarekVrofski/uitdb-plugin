@@ -27,10 +27,6 @@
 
 require_once plugin_dir_path( dirname( __FILE__)) . 'vendor/autoload.php';
 
-/**
- * @todo: use the notices from wordpress for notices instead of echoes
- */
-
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Subscriber\Oauth\Oauth1;
@@ -48,6 +44,15 @@ switch ($_POST['type']){
     case 'loadEventsAuto':
         $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
         $store = $ec->loadEventsAuto($_POST['autoloadYes'], $_POST['autoloadNo']);
+        break;
+    case 'updateEvent':
+        $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
+        $store = $ec->updateEvent($_POST['cdbid'], $_POST['available_from'], $_POST['available_to'], $_POST['event_type'], $_POST['latitude'], $_POST['longitude'], $_POST['address_no'], $_POST['address'], $_POST['zip_code'], $_POST['city'], $_POST['email'], $_POST['long_description'], $_POST['price'], $_POST['price_description'], $_POST['title'], $_POST['media_link']);
+        break;
+    case 'deleteEvent':
+        $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
+        $delete = $ec->deleteEvent($_POST['cdb_id'], $_POST['deleteEventChoice']);
+        break;
 }
 
 class UitdbPlugin_Admin {
@@ -324,6 +329,76 @@ class UitdbPlugin_Admin {
         $events = $wpdb->get_results("SELECT * FROM $tName ORDER BY available_to ASC");
 
         return $events;
+    }
+
+    public function editEvent($cdbid)
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_events';
+
+        $eventResult = $wpdb->get_row("SELECT * FROM $tName WHERE cdb_id = '$cdbid'");
+
+        return $eventResult;
+    }
+
+    public function updateEvent($cdbid, $available_from, $available_to, $event_type, $latitude, $longitude, $address_no, $address, $zipcode, $city, $email, $long_description, $price, $price_description, $title, $media_link)
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_events';
+
+        $wpdb->update(
+            $tName,
+            array(
+                'title' => $title,
+                'available_from' => $available_from,
+                'available_to' => $available_to,
+                'event_type' => $event_type,
+                'address_no' => $address_no,
+                'address' => $address,
+                'zip_code' => $zipcode,
+                'city' => $city,
+                'email' => $email,
+                'long_description' => $long_description,
+                'price' => $price,
+                'price_description' => $price_description,
+                'longitude' => $longitude,
+                'latitude' => $latitude,
+                'media_link' => $media_link,
+            ),
+            array(
+                'cdb_id' => $cdbid,
+            )
+        );
+
+        return;
+    }
+
+    public function deleteEvent($cdbid, $choice)
+    {
+        if($choice === 'yes'){
+            global $wpdb;
+            $tName = $wpdb->prefix . 'uitdb_events';
+
+            $q = "SELECT * FROM $tName WHERE cdb_id = '$cdbid'";
+            $indb = $wpdb->get_row($q, ARRAY_A);
+
+            if($indb > 0) {
+                $qdelete = "DELETE FROM $tName WHERE cdb_id = '$cdbid'";
+                $wpdb->query($qdelete);
+                echo "<strong>event with: " . $cdbid . " Deleted</strong>";
+
+                $url = get_site_url() . '/wp-admin/admin.php?page=uitdb-beheer';
+
+                header("Location: " . $url );
+
+            } else {
+                Echo "<strong>Could not delete, record does not exist</strong>";
+
+                $url = get_site_url() . '/wp-admin/admin.php?page=uitdb-beheer';
+
+                header("Location: " . $url );
+            }
+        }
     }
 
     public function loadEventsAuto($autoloadYes, $autoloadNo)
