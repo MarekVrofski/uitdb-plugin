@@ -22,6 +22,7 @@ $aLoad = $ec->showAutoload();
 <div class="wrap">
     <form action="<?php __FILE__ ?>" method="post">
         <input type="hidden" name="type" value="keySecret">
+        <input type="hidden" name="id" value="<?php echo isset($ksCombo['id']) ? $ksCombo['id']:''; ?>">
         <table class="table table-striped table-wrap">
             <thead>
             <tr>
@@ -31,17 +32,14 @@ $aLoad = $ec->showAutoload();
             <tr>
                 <td><label for="key">Key:</label></td>
                 <td><input class="table-wrap-ks" type="text" name="key" placeholder="<?php echo isset($ksCombo) ? $ksCombo['uitdb_key'] : 'Key'; ?>" value="<?php echo isset($ksCombo) ? $ksCombo['uitdb_key'] : 'Key'; ?>"/></td>
-                <td></td>
             </tr>
             <tr>
                 <td><label for="secret">Secret:</label></td>
                 <td><input class="table-wrap-ks" type="text" name="secret" placeholder="<?php echo isset($ksCombo) ? $ksCombo['uitdb_secret'] : 'Secret'; ?>" value="<?php echo isset($ksCombo) ? $ksCombo['uitdb_secret'] : 'Secret'; ?>"/></td>
-                <td></td>
             </tr>
             <tr>
                 <td></td>
-                <td><button type="submit">Key & Secret gebruiken</button></td>
-                <td><button type="submit">Key & Secret updaten</button></td>
+                <td><button type="submit">Key & Secret <?php echo isset($ksCombo) ? 'updaten' : 'gebruiken'; ?></button></td>
             </tr>
         </table>
     </form>
@@ -72,13 +70,15 @@ $aLoad = $ec->showAutoload();
             </tr>
             <tr>
                 <fieldset id="autoloadDuration">
-                    <td colspan="2">
-                        <label>Hourly:</label>
-                        <input type="radio" value="hourly" name="hourly">
-                        <label>Twicedaily:</label>
-                        <input type="radio" value="twicedaily" name="twicedaily">
-                        <label>Daily:</label>
-                        <input type="radio" value="daily" name="daily">
+                    <td>
+                        <label>Timespan:</label>
+                    </td>
+                    <td>
+                        <select name="timespan">
+                            <option value="hourly">Hourly</option>
+                            <option value="twicedaily">Twice daily</option>
+                            <option value="daily">Daily</option>
+                        </select>
                     </td>
                 </fieldset>
             </tr>

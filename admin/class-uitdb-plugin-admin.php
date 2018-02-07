@@ -35,7 +35,7 @@ use GuzzleHttp\Psr7;
 switch ($_POST['type']){
     case 'keySecret':
         $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
-        $store = $ec->ksCombo($_POST['key'], $_POST['secret']);
+        $store = $ec->ksCombo($_POST['key'], $_POST['secret'], $_POST['id']);
         break;
     case 'importEvents':
         $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
@@ -43,7 +43,7 @@ switch ($_POST['type']){
         break;
     case 'loadEventsAuto':
         $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
-        $store = $ec->loadEventsAuto($_POST['autoloadYes'], $_POST['autoloadNo']);
+        $store = $ec->loadEventsAuto($_POST['autoloadYes'], $_POST['autoloadNo'], $_POST['timespan']);
         break;
     case 'updateEvent':
         $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
@@ -168,17 +168,21 @@ class UitdbPlugin_Admin {
         }
     }
 
-    public function ksCombo($key, $secret)
+    public function ksCombo($key, $secret, $id)
     {
         global $wpdb;
         $tName = $wpdb->prefix . 'uitdb_key_secret';
 
-        $q = "SELECT * FROM '$tName' WHERE uitdb_key = '$key' AND uitdb_secret = '$secret'";
-        $indb = $wpdb->get_row($q, ARRAY_A);
-
-        if($indb > 0){
-            echo "<strong>Key: " . $key . " & Secret: " . $secret . " already exist</strong>";
-        } else {
+        if( isset($id) && !empty($id) ) {
+            $wpdb->query( $wpdb->prepare(
+                "UPDATE $tName SET uitdb_key = '%s', uitdb_secret = '%s' WHERE id = '%s'",
+                array(
+                    $key,
+                    $secret,
+                    $id
+                )
+            ));
+        } else if ( empty($id) ) {
             $wpdb->insert(
                 $tName,
                 array(
@@ -190,14 +194,7 @@ class UitdbPlugin_Admin {
                     '%s'
                 )
             );
-
-            if($wpdb == false){
-                echo "<strong>Key & Secret niet opgeslagen</strong>";
-            }elseif($wpdb == true){
-                echo "<strong>Key & Secret opgeslagen</strong>";
-            }
         }
-
         return;
     }
 
@@ -401,15 +398,13 @@ class UitdbPlugin_Admin {
         }
     }
 
-    public function loadEventsAuto($autoloadYes, $autoloadNo)
+    public function loadEventsAuto($autoloadYes, $autoloadNo, $timespan)
     {
         global $wpdb;
         $tName = $wpdb->prefix . 'uitdb_options';
         $oName = "autoload";
 
         $selectQ = "SELECT * FROM $tName WHERE uitdb_option_name = '$oName'";
-
-        $indb = $wpdb->get_row($selectQ, ARRAY_A);
 
         $indb = $wpdb->get_row($selectQ, ARRAY_A);
 
@@ -422,14 +417,21 @@ class UitdbPlugin_Admin {
                         $oName
                     )
                 ));
+
+                wp_clear_scheduled_hook('cliv_recurring_cron_job');
+
             } else if (strtolower($indb['uidb_option_value']) === 'no' || strtolower($autoloadYes) === 'yes') {
+                $autoloadTypeTimespan = "{type:" . strtolower($autoloadYes) . ", timespan:" . $timespan . "}";
+
                 $wpdb->query( $wpdb->prepare(
                     "UPDATE $tName SET uitdb_option_value = '%s' WHERE uitdb_option_name = '%s'",
                     array(
-                        $autoloadYes,
+                        $autoloadTypeTimespan,
                         $oName
                     )
                 ));
+
+                wp_clear_scheduled_hook('cliv_recurring_cron_job');
 
                 $this->actualAutoload();
             }
@@ -455,6 +457,7 @@ class UitdbPlugin_Admin {
                 }
                 return;
             } else if (strtolower($autoloadYes) === 'yes' && !isset($autoloadNo)) {
+                $autoloadTypeTimespan = "{type:" . strtolower($autoloadYes) . ", timespan:" . $timespan . "}";
                 $result = $wpdb->get_row($selectQ, ARRAY_A);
 
                 if ($result < 1) {
@@ -462,7 +465,7 @@ class UitdbPlugin_Admin {
                         "INSERT INTO $tName (uitdb_option_name, uitdb_option_value) VALUES ( %s, %s)",
                         array(
                             $oName,
-                            $autoloadYes
+                            $autoloadTypeTimespan
                         )
                     ));
 
@@ -499,7 +502,7 @@ class UitdbPlugin_Admin {
     public function send_emails_to_users() {
         if(!wp_next_scheduled('cliv_recurring_cron_job')) {
             // Add "cliv_recurring_cron_job" action so it fire every hour
-            wp_schedule_event(time(), 'hourly', 'cliv_recurring_cron_job');
+            wp_schedule_event(time(), $_POST['timespan'], 'cliv_recurring_cron_job');
         }
     }
 }
