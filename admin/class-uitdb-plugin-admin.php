@@ -211,6 +211,9 @@ class UitdbPlugin_Admin {
 
     public function importEvents()
     {
+        $countError = 0;
+        $countGood = 0;
+
         global $wpdb;
         $tName = $wpdb->prefix . 'uitdb_events';
         $ksCombo = $this->showKsCombo();
@@ -257,7 +260,7 @@ class UitdbPlugin_Admin {
                 $indb = $wpdb->get_row($q, ARRAY_A);
 
                 if($indb > 0) {
-                    echo "<strong>Evenement met: " . $cdbid . " bestaat al</strong>";
+                    continue;
                 } else {
                     if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
                         $price = "0";
@@ -300,12 +303,23 @@ class UitdbPlugin_Admin {
                     ));
 
                     if($wpdb == false){
-                        echo "<strong>Geen nieuw record aangemaakt</strong>";
+                        $countError++;
                     }elseif($wpdb == true){
-                        echo "<strong>Nieuw record aangemaakt</strong> met cdbid: " . $cdbid . "<br/>";
+                        $countGood++;
                     }
                 }
             }
+
+            var_dump($countGood);
+
+            function importSuccess($countGood){
+                echo '<div class="notice notice-info is-dismissible">
+                        <p>' . $countGood . '</p>
+                    </div>';
+            }
+            add_action('admin_notices', 'importSuccess', 10, 1);
+
+            //add_action( 'admin_notices', array($this, 'importSuccess') );
 
         }
 
@@ -315,6 +329,7 @@ class UitdbPlugin_Admin {
                 echo Psr7\str($e->getResponse());
             }
         }
+
         return;
     }
 
