@@ -53,6 +53,10 @@ switch ($_POST['type']){
         $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
         $delete = $ec->deleteEvent($_POST['cdb_id'], $_POST['deleteEventChoice']);
         break;
+    case 'keywords':
+        $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version);
+        $store = $ec->storeKeywords($_POST['id'], $_POST['keyword']);
+        break;
 }
 
 class UitdbPlugin_Admin {
@@ -166,6 +170,52 @@ class UitdbPlugin_Admin {
         {
             require_once ( dirname(__FILE__) . '/partials/uitdb-plugin-options-page-display.php');
         }
+    }
+
+    public function storeKeywords($id, $keywords)
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_options';
+        $oName = 'keyword';
+
+        $indb = $wpdb->get_results("SELECT * FROM $tName WHERE uitdb_option_name = '$oName'");
+
+        if( isset($id) && !empty($id) ) {
+            $wpdb->query( $wpdb->prepare(
+                "UPDATE $tName SET uitdb_option_value = '%s' WHERE id = '%s'",
+                array(
+                    $keywords,
+                    $id
+                )
+            ));
+        } else if ( empty($id) && empty($indb) ) {
+            $wpdb->insert(
+                $tName,
+                array(
+                    'uitdb_option_name' => $oName,
+                    'uitdb_option_value' => $keywords
+                ),
+                array(
+                    '%s',
+                    '%s'
+                )
+            );
+        }
+        return;
+
+    }
+
+    public function showKeywords()
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_options';
+        $oName = 'keyword';
+        $vName = 'uitdb_option_value';
+
+        $q = "SELECT id, $vName FROM $tName WHERE uitdb_option_name = '$oName'";
+        $result = $wpdb->get_row($q, ARRAY_A);
+
+        return $result;
     }
 
     public function ksCombo($key, $secret, $id)
@@ -310,23 +360,27 @@ class UitdbPlugin_Admin {
                 }
             }
 
-            var_dump($countGood);
-
-            function importSuccess($countGood){
-                echo '<div class="notice notice-info is-dismissible">
-                        <p>' . $countGood . '</p>
-                    </div>';
-            }
             add_action('admin_notices', 'importSuccess', 10, 1);
 
-            //add_action( 'admin_notices', array($this, 'importSuccess') );
-
+            function importSuccess() {
+                echo '<div class="notice notice-info is-dismissible">
+                        <p>Nieuwe evenementen zijn geimporteerd</p>
+                    </div>';
+            }
         }
 
         catch (\GuzzleHttp\Exception\RequestException $e) {
             echo Psr7\str($e->getRequest());
             if($e->hasResponse()) {
                 echo Psr7\str($e->getResponse());
+            }
+
+            add_action('admin_notices', 'importFailure', 10, 1);
+
+            function importFailure() {
+                echo '<div class="notice notice-danger is-dismissible">
+                        <p>Evenementen zijn niet geimporteerd</p>
+                    </div>';
             }
         }
 

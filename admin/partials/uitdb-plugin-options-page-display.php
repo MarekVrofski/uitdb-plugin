@@ -11,10 +11,7 @@ require_once (__FILE__);
 $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
 $ksCombo = $ec->showKsCombo();
 $aLoad = $ec->showAutoload();
-
-/**
- * todo: update this so it is a form where you can delete/update the key/secret
- */
+$keyword = $ec->showKeywords();
 
 ?>
 <h1>Options</h1>
@@ -92,4 +89,29 @@ $aLoad = $ec->showAutoload();
             </tr>
         </table>
     </form>
+
+    <hr/>
+
+    <form action="<?php __FILE__ ?>" method="post">
+        <input type="hidden" name="type" value="keywords">
+        <input type="hidden" name="id" value="<?php echo isset($keyword['id']) ? $keyword['id']:''; ?>">
+        <table class="table table-striped table-wrap">
+            <thead>
+            <tr>
+                <th colspan="2">Keyword:</th>
+            </tr>
+            </thead>
+            <tr>
+                <td><label for="keyword">Keyword:</label></td>
+                <td><input class="table-wrap-ks" type="text" name="keyword" placeholder="<?php echo isset($keyword) ? $keyword['uitdb_option_value'] : 'Keyword'; ?>" value="<?php echo isset($keyword) ? $keyword['uitdb_option_value'] : ''; ?>"/></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit">Save Keyword</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <hr/>
 </div>
