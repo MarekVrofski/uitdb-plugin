@@ -148,6 +148,7 @@ if(empty($cdbId)){
                     <td>
                         <input type="hidden" name="type" value="updateEvent">
                         <button class="btn btn-sm btn-success" type="submit">Update</button>
+                        <a href="<?php echo admin_url('admin.php?page=uitdb-beheer'); ?>" class="btn btn-sm btn-danger">Go back</a>
                     </td>
                 </tr>
             </table>
