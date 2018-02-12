@@ -13,6 +13,6 @@ require_once (__FILE__);
 <div class="wrap">
     <form action="<?php __FILE__ ?>" method="post">
         <input type="hidden" name="type" value="importEvents">
-        <button type="submit">Importeer evenementen</button>
+        <button type="submit" class="btn btn-primary">Importeer evenementen</button>
     </form>
 </div>
