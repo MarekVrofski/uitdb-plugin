@@ -288,17 +288,26 @@ class UitdbPlugin_Admin {
             'auth' => 'oauth'
         ]);
 
-        /*
-         * todo: make sure the keyword is working with input
-         */
-
         try {
-            $response = $client->get('uitid/rest/searchv2/search', ['query' => [
-                'q' => '*:*',
-                'start' => 0,
-                'rows' => 300,
-                'sort' => 'startdate asc'
-            ]]);
+
+            $keyword = $this->showKeywords();
+            $keyword = $keyword['uitdb_option_value'];
+
+            if( !empty($keyword) ) {
+                $response = $client->get('uitid/rest/searchv2/search', ['query' => [
+                    'q' => '*:* keywords:$keyword',
+                    'start' => 0,
+                    'rows' => 300,
+                    'sort' => 'startdate asc'
+                ]]);
+            } else if( empty($keyword) ) {
+                $response = $client->get('uitid/rest/searchv2/search', ['query' => [
+                    'q' => '*:*',
+                    'start' => 0,
+                    'rows' => 300,
+                    'sort' => 'startdate asc'
+                ]]);
+            }
 
             $response = (string)$response->getBody();
             $prefix = 'cdb';
