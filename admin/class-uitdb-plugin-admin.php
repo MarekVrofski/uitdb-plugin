@@ -26,6 +26,7 @@
  */
 
 require_once plugin_dir_path( dirname( __FILE__)) . 'vendor/autoload.php';
+require_once plugin_dir_path( dirname( __FILE__)) . 'includes/uitdbMessage.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
@@ -310,7 +311,7 @@ class UitdbPlugin_Admin {
                 $indb = $wpdb->get_row($q, ARRAY_A);
 
                 if($indb > 0) {
-                    continue;
+                    $countError++;
                 } else {
                     if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
                         $price = "0";
@@ -353,34 +354,20 @@ class UitdbPlugin_Admin {
                     ));
 
                     if($wpdb == false){
-                        $countError++;
+
                     }elseif($wpdb == true){
                         $countGood++;
                     }
                 }
             }
-
-            add_action('admin_notices', 'importSuccess', 10, 1);
-
-            function importSuccess() {
-                echo '<div class="notice notice-info is-dismissible">
-                        <p>Nieuwe evenementen zijn geimporteerd</p>
-                    </div>';
-            }
+            new uitdbMessage("$countGood are imported", "success");
+            new uitdbMessage("$countError aren't imported because they exist", "error");
         }
 
         catch (\GuzzleHttp\Exception\RequestException $e) {
             echo Psr7\str($e->getRequest());
             if($e->hasResponse()) {
                 echo Psr7\str($e->getResponse());
-            }
-
-            add_action('admin_notices', 'importFailure', 10, 1);
-
-            function importFailure() {
-                echo '<div class="notice notice-danger is-dismissible">
-                        <p>Evenementen zijn niet geimporteerd</p>
-                    </div>';
             }
         }
 
