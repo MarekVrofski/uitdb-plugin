@@ -288,6 +288,10 @@ class UitdbPlugin_Admin {
             'auth' => 'oauth'
         ]);
 
+        /*
+         * todo: make sure the keyword is working with input
+         */
+
         try {
 
             $keyword = $this->showKeywords();
@@ -383,12 +387,22 @@ class UitdbPlugin_Admin {
         return;
     }
 
-    public function eventsOverview()
+    public function eventsOverview($limit, $offset)
     {
         global $wpdb;
         $tName = $wpdb->prefix . 'uitdb_events';
 
-        $events = $wpdb->get_results("SELECT * FROM $tName ORDER BY available_to ASC");
+        $events = $wpdb->get_results("SELECT * FROM $tName ORDER BY available_to ASC LIMIT $offset, $limit");
+
+        return $events;
+    }
+
+    public function requestAllEvents()
+    {
+        global $wpdb;
+        $tName = $wpdb->prefix . 'uitdb_events';
+
+        $events = $wpdb->get_results("SELECT * FROM $tName");
 
         return $events;
     }

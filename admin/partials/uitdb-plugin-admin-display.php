@@ -20,11 +20,30 @@ if(!empty($_GET['cdbid'] && $_GET['t'])){
 }
 
 if(empty($cdbId)){
+    $allEvents = new UitdbPlugin_admin( $uitdb_plugin, $version );
+    $allEvents = $allEvents->requestAllEvents();
+
+    $limit = 10;
+    $offset = 0;
+
+    $totalEvents = count($allEvents);
+    $totalPages = ceil($totalEvents/$limit);
+
+    $currentPage = isset($_GET['paged']) ? $_GET['paged'] : 1;
+
+    $nextPage = $currentPage + 1;
+
+    if( $currentPage != 0 ){
+        $prevPage = $currentPage -1;
+    }
+
+    isset($_GET['paged']) || $_GET['paged'] == 1 ? $offset = ($_GET['paged']-1) * $limit : $offset = 0 ;
+
     $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
-    $events = $ec->eventsOverview();
+    $events = $ec->eventsOverview($limit, $offset);
+
     ?>
 
-    <!-- This file should primarily consist of HTML with a little bit of PHP. -->
     <h1>Beheer</h1>
     <div class="wrap table-wrap">
         <table class="table table-striped">
@@ -59,6 +78,20 @@ if(empty($cdbId)){
                     </td>
                 </tr>
             <?php } ?>
+            <tr>
+                <td>
+                    <?php echo $totalPages; ?>
+                    <?php echo $currentPage; ?>
+                    <?php echo $nextPage; ?>
+                    <?php echo $offset; ?>
+                </td>
+                <td>
+                    <?php echo $prevPage != 0 ? '<a class="btn btn-primary" href=' . admin_url("admin.php?page=uitdb-beheer&paged=" . $prevPage ) . '> &#60; Previous Page</a>' :''; ?>
+                </td>
+                <td>
+                    <?php echo $_GET['paged'] == $totalPages ? '' : '<a class="btn btn-primary" href=' . admin_url('admin.php?page=uitdb-beheer&paged=' . $nextPage) . '>Next page &#62; </a>'; ?>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>
