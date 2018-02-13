@@ -570,7 +570,6 @@ class UitdbPlugin_Admin {
     }
 
     public function actualAutoload() {
-        // Call function for cron
         add_action('init', array( $this, 'send_emails_to_users') );
     }
 
