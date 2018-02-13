@@ -288,10 +288,6 @@ class UitdbPlugin_Admin {
             'auth' => 'oauth'
         ]);
 
-        /*
-         * todo: make sure the keyword is working with input
-         */
-
         try {
 
             $keyword = $this->showKeywords();
