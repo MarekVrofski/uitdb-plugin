@@ -2,3 +2,25 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+
+@import url("../../vendor/twbs/bootstrap/dist/css/bootstrap.css");
+
+.table-wrap {
+    width: 75%;
+}
+
+.table {
+    font-size: 0.75rem;
+}
+
+.table th {
+    padding: 0.5rem;
+}
+
+.table td {
+    padding: 0.40rem;
+}
+
+.table-wrap tbody tr td .table-wrap-ks {
+    width: 100%;
+}
