@@ -181,7 +181,7 @@ if(empty($cdbId)){
                     <td>
                         <input type="hidden" name="type" value="updateEvent">
                         <button class="btn btn-sm btn-success" type="submit">Update</button>
-                        <a href="<?php echo admin_url('admin.php?page=uitdb-beheer'); ?>" class="btn btn-sm btn-danger">Go back</a>
+                        <a href="<?php echo admin_url('admin.php?page=uitdb-beheer'); ?>" class="btn btn-sm btn-danger">Ga terug</a>
                     </td>
                 </tr>
             </table>
@@ -192,14 +192,14 @@ if(empty($cdbId)){
     $ec = new UitdbPlugin_Admin( $uitdb_plugin, $version );
     $singleEvent = $ec->editEvent($cdbId);
     ?>
-    <h1>Delete</h1>
+    <h1>Verwijderen</h1>
     <div class="wrap table-wrap">
         <form action="<?php __FILE__ ?>" method="post">
             <input type="hidden" value="deleteEvent" name="type"/>
             <input type="hidden" value="<?= $singleEvent->cdb_id; ?>" name="cdb_id"/>
-            <p>Are you sure you want to delete event named <?= $singleEvent->title; ?>?</p>
-            <button class="btn btn-sm btn-success" type="submit" name="deleteEventChoice" value="yes">Yes</button>
-            <a href="<?php echo admin_url('admin.php?page=uitdb-beheer'); ?>" class="btn btn-sm btn-danger">No</a>
+            <p>Weet je zeker dat je evenement: <?= $singleEvent->title; ?> wilt verwijderen?</p>
+            <button class="btn btn-sm btn-success" type="submit" name="deleteEventChoice" value="yes">Ja</button>
+            <a href="<?php echo admin_url('admin.php?page=uitdb-beheer'); ?>" class="btn btn-sm btn-danger">Nee</a>
         </form>
     </div>
     <?php
