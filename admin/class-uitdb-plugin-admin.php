@@ -323,60 +323,103 @@ class UitdbPlugin_Admin {
                     $countError++;
                 } else {
                     /**
-                     * cdbid            ->  continue
-                     * availablefrom    ->  now
-                     * availableto      ->  1 month from now
-                     * eventtype        ->  default eventtype
-                     * xcoordinate      ->  0
-                     * ycoordinate      ->  0
-                     * housenr          ->  0
-                     * street           ->  not provided or empty
-                     * zipcode          ->  not provided or empty
-                     * city             ->  not provided or empty
-                     * mail             ->  not provided or empty
-                     * longdescription  ->  no description provided or empty
-                     * price            ->  0
-                     * priceDesc        ->  not provided or empty
-                     * title            ->  continue
-                     * media            ->  default image not available
-                     *
+                     * cdbid            ->  continue                            ---
+                     * availablefrom    ->  now                                 ---
+                     * availableto      ->  1 month from now                    ---
+                     * eventtype        ->  default eventtype                   ---
+                     * xcoordinate      ->  0                                   ---
+                     * ycoordinate      ->  0                                   ---
+                     * housenr          ->  empty                               --- handled by db
+                     * street           ->  not provided or empty               --- handled by db
+                     * zipcode          ->  not provided or empty               --- handled by db
+                     * city             ->  not provided or empty               --- handled by db
+                     * mail             ->  not provided or empty               --- handled by db
+                     * longdescription  ->  no description provided or empty    --- handled by db
+                     * price            ->  0                                   ---
+                     * priceDesc        ->  not provided or empty               ---
+                     * title            ->  continue                            ---
+                     * media            ->  default image or not available      ---
                      */
 
-                    if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
-                        $price = "0";
-                    } else {
-                        $price = $xmlEvent->eventdetails->eventdetail->price->pricevalue;
+                    if(empty($xmlEvent->attributes()->cdbid->__toString())) {
+                        continue;
                     }
 
-                    if ($xmlEvent->eventdetails->eventdetail->price->pricedescription == null) {
-                        $priceDesc = "not available";
-                    } else {
-                        $priceDesc = $xmlEvent->eventdetails->eventdetail->price->pricedescription->__toString();
+                    if(empty($xmlEvent->eventdetails->eventdetail->title->__toString())) {
+                        continue;
                     }
 
+                    if(empty($xmlEvent->attributes()->availablefrom->__toString())) {
+                        $availableFrom = date('Y-m-d');
+                    } else {
+                        $availableFrom = date('Y-m-d', strtotime($xmlEvent->attributes()->availablefrom->__toString()));
+                    }
+
+                    if(empty($xmlEvent->attributes()->availableto->__toString())) {
+                        $availableTo = date('Y-m-d', strtotime('+1 month'));
+                    } else {
+                        $availableTo = date('Y-m-d', strtotime($xmlEvent->attributes()->availableto->__toString()));
+                    }
+
+                    if(empty($xmlEvent->categories->category->attributes()->type->__toString())) {
+                        $eventType = "event";
+                    } else {
+                        $eventType = $xmlEvent->categories->category->attributes()->type->__toString();
+                    }
+
+                    if(empty($xmlEvent->contactinfo->address->physical->gis->xcoordinate->__toString())) {
+                        $xAxis = 0;
+                    } else {
+                        $xAxis = $xmlEvent->contactinfo->address->physical->gis->xcoordinate->__toString();
+                    }
+
+                    if(empty($xmlEvent->contactinfo->address->physical->gis->ycoordinate->__toString())) {
+                        $yAxis = 0;
+                    } else {
+                        $yAxis = $xmlEvent->contactinfo->address->physical->gis->ycoordinate->__toString();
+                    }
+
+                    /**
+                     * @todo rewrite this to add default image instead of not available
+                     */
                     if ($xmlEvent->eventdetails->eventdetail->media->file == null){
                         $media = "not available";
                     } else {
                         $media = $xmlEvent->eventdetails->eventdetail->media->file->hlink->__toString();
                     }
 
+                    /**
+                     *
+                        if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
+                            $price = "0";
+                        } else {
+                            $price = $xmlEvent->eventdetails->eventdetail->price->pricevalue;
+                        }
+
+                        if ($xmlEvent->eventdetails->eventdetail->price->pricedescription == null) {
+                            $priceDesc = "not available";
+                        } else {
+                            $priceDesc = $xmlEvent->eventdetails->eventdetail->price->pricedescription->__toString();
+                        }
+                     */
+
                     $wpdb->query( $wpdb->prepare(
                         "INSERT INTO $tName (cdb_id, available_from, available_to, event_type, latitude, longitude, address_no, address, zip_code, city, email, long_description, price, price_description, title, media_link) VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s )",
                         array(
                             $xmlEvent->attributes()->cdbid->__toString(),
-                            date('Y-m-d', strtotime($xmlEvent->attributes()->availablefrom->__toString())),
-                            date('Y-m-d', strtotime($xmlEvent->attributes()->availableto->__toString())),
-                            $xmlEvent->categories->category->attributes()->type->__toString(),
-                            $xmlEvent->contactinfo->address->physical->gis->xcoordinate->__toString(),
-                            $xmlEvent->contactinfo->address->physical->gis->ycoordinate->__toString(),
+                            $availableFrom,
+                            $availableTo,
+                            $eventType,
+                            $xAxis,
+                            $yAxis,
                             $xmlEvent->contactinfo->address->physical->housenr->__toString(),
                             $xmlEvent->contactinfo->address->physical->street->__toString(),
                             $xmlEvent->contactinfo->address->physical->zipcode->__toString(),
                             $xmlEvent->contactinfo->address->physical->city->__toString(),
                             $xmlEvent->contactinfo->mail->__toString(),
                             $xmlEvent->eventdetails->eventdetail->longdescription->__toString(),
-                            $price,
-                            $priceDesc,
+                            $xmlEvent->eventdetails->eventdetail->price->pricevalue,
+                            $xmlEvent->eventdetails->eventdetail->price->pricedescription->__toString(),
                             $xmlEvent->eventdetails->eventdetail->title->__toString(),
                             $media
                         )
