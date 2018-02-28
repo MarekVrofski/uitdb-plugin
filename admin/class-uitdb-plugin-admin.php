@@ -322,6 +322,26 @@ class UitdbPlugin_Admin {
                 if($indb > 0) {
                     $countError++;
                 } else {
+                    /**
+                     * cdbid            ->  continue
+                     * availablefrom    ->  now
+                     * availableto      ->  1 month from now
+                     * eventtype        ->  default eventtype
+                     * xcoordinate      ->  0
+                     * ycoordinate      ->  0
+                     * housenr          ->  0
+                     * street           ->  not provided or empty
+                     * zipcode          ->  not provided or empty
+                     * city             ->  not provided or empty
+                     * mail             ->  not provided or empty
+                     * longdescription  ->  no description provided or empty
+                     * price            ->  0
+                     * priceDesc        ->  not provided or empty
+                     * title            ->  continue
+                     * media            ->  default image not available
+                     *
+                     */
+
                     if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
                         $price = "0";
                     } else {
