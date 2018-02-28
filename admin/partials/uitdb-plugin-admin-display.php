@@ -79,17 +79,12 @@ if(empty($cdbId)){
                 </tr>
             <?php } ?>
             <tr>
+                <td colspan="3"></td>
                 <td>
-                    <?php echo $totalPages; ?>
-                    <?php echo $currentPage; ?>
-                    <?php echo $nextPage; ?>
-                    <?php echo $offset; ?>
+                    <?php echo $prevPage != 0 ? '<a class="btn btn-sm btn-secondary" href=' . admin_url("admin.php?page=uitdb-beheer&paged=" . $prevPage ) . '> &#60; Previous</a>' :''; ?>
                 </td>
                 <td>
-                    <?php echo $prevPage != 0 ? '<a class="btn btn-primary" href=' . admin_url("admin.php?page=uitdb-beheer&paged=" . $prevPage ) . '> &#60; Previous Page</a>' :''; ?>
-                </td>
-                <td>
-                    <?php echo $_GET['paged'] == $totalPages ? '' : '<a class="btn btn-primary" href=' . admin_url('admin.php?page=uitdb-beheer&paged=' . $nextPage) . '>Next page &#62; </a>'; ?>
+                    <?php echo $_GET['paged'] == $totalPages ? '' : '<a class="btn btn-sm btn-secondary" href=' . admin_url('admin.php?page=uitdb-beheer&paged=' . $nextPage) . '>Next &#62; </a>'; ?>
                 </td>
             </tr>
             </tbody>
