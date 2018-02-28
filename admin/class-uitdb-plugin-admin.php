@@ -341,48 +341,54 @@ class UitdbPlugin_Admin {
                      * media            ->  default image or not available      ---
                      */
 
-                    if(empty($xmlEvent->attributes()->cdbid->__toString())) {
+                    if(empty($xmlEvent->attributes()->cdbid)) {
                         continue;
                     }
 
-                    if(empty($xmlEvent->eventdetails->eventdetail->title->__toString())) {
+                    if(empty($xmlEvent->eventdetails->eventdetail->title)) {
                         continue;
                     }
 
-                    if(empty($xmlEvent->attributes()->availablefrom->__toString())) {
+                    if(empty($xmlEvent->attributes()->availablefrom)) {
                         $availableFrom = date('Y-m-d');
                     } else {
                         $availableFrom = date('Y-m-d', strtotime($xmlEvent->attributes()->availablefrom->__toString()));
                     }
 
-                    if(empty($xmlEvent->attributes()->availableto->__toString())) {
+                    if(empty($xmlEvent->attributes()->availableto)) {
                         $availableTo = date('Y-m-d', strtotime('+1 month'));
                     } else {
                         $availableTo = date('Y-m-d', strtotime($xmlEvent->attributes()->availableto->__toString()));
                     }
 
-                    if(empty($xmlEvent->categories->category->attributes()->type->__toString())) {
+                    if(empty($xmlEvent->categories->category->attributes()->type)) {
                         $eventType = "event";
                     } else {
                         $eventType = $xmlEvent->categories->category->attributes()->type->__toString();
                     }
 
-                    if(empty($xmlEvent->contactinfo->address->physical->gis->xcoordinate->__toString())) {
+                    if(empty($xmlEvent->contactinfo->address->physical->gis->xcoordinate)) {
                         $xAxis = 0;
                     } else {
                         $xAxis = $xmlEvent->contactinfo->address->physical->gis->xcoordinate->__toString();
                     }
 
-                    if(empty($xmlEvent->contactinfo->address->physical->gis->ycoordinate->__toString())) {
+                    if(empty($xmlEvent->contactinfo->address->physical->gis->ycoordinate)) {
                         $yAxis = 0;
                     } else {
                         $yAxis = $xmlEvent->contactinfo->address->physical->gis->ycoordinate->__toString();
                     }
 
+                    if(empty($xmlEvent->eventdetails->eventdetail->price->pricedescription)) {
+                        $priceDesc = "";
+                    } else {
+                        $priceDesc = $xmlEvent->eventdetails->eventdetail->price->pricedescription->__toString();
+                    }
+
                     /**
                      * @todo rewrite this to add default image instead of not available
                      */
-                    if ($xmlEvent->eventdetails->eventdetail->media->file == null){
+                    if(empty($xmlEvent->eventdetails->eventdetail->media->file)){
                         $media = "not available";
                     } else {
                         $media = $xmlEvent->eventdetails->eventdetail->media->file->hlink->__toString();
@@ -390,17 +396,11 @@ class UitdbPlugin_Admin {
 
                     /**
                      *
-                        if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
-                            $price = "0";
-                        } else {
-                            $price = $xmlEvent->eventdetails->eventdetail->price->pricevalue;
-                        }
-
-                        if ($xmlEvent->eventdetails->eventdetail->price->pricedescription == null) {
-                            $priceDesc = "not available";
-                        } else {
-                            $priceDesc = $xmlEvent->eventdetails->eventdetail->price->pricedescription->__toString();
-                        }
+                    if($xmlEvent->eventdetails->eventdetail->price->pricevalue == null){
+                    $price = "0";
+                    } else {
+                    $price = $xmlEvent->eventdetails->eventdetail->price->pricevalue;
+                    }
                      */
 
                     $wpdb->query( $wpdb->prepare(
@@ -419,7 +419,7 @@ class UitdbPlugin_Admin {
                             $xmlEvent->contactinfo->mail->__toString(),
                             $xmlEvent->eventdetails->eventdetail->longdescription->__toString(),
                             $xmlEvent->eventdetails->eventdetail->price->pricevalue,
-                            $xmlEvent->eventdetails->eventdetail->price->pricedescription->__toString(),
+                            $priceDesc,
                             $xmlEvent->eventdetails->eventdetail->title->__toString(),
                             $media
                         )
